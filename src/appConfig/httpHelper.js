@@ -4,6 +4,7 @@ const axios = Axios.create({
   timeout: 600000,
   headers: {
     'Access-Control-Allow-Origin': process.env.REACT_APP_BASE_URL,
+    'Referrer-Policy': "",
     'Cache-Control': 'no-cache',
     Pragma: 'no-cache',
     Expires: '0',
