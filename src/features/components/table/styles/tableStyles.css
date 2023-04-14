@@ -1,0 +1,26 @@
+thead[class*="ant-table-thead"] th {
+  background: #efefef;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ff4c1c;
+}
+
+.ant-table-cell {
+  max-width: 200px;
+  overflow: hidden;
+  color: #393939;
+}
+
+.rowDisabled {
+  background-color: #dddddd !important;
+}
+
+.ant-pagination-item-active {
+  border-width: 2px;
+  border-color: #ff4c1c;
+  font-weight: bold;
+}
+
+a {
+  color: #ff4c1c;
+}
