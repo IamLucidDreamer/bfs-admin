@@ -11,6 +11,7 @@ import DashboardStats from "../features/DashboardStats";
 import Blogs from "../features/Blogs";
 import Colleges from "../features/Colleges";
 import Videos from "../features/Videos";
+import Subscriber from "../features/Subscriber";
 
 // import { Users } from "../users/Index";
 // import { Approvals } from "../approvals/Index";
@@ -40,6 +41,7 @@ const Index = () => {
             <Route path="college" element={<Colleges />} />
             <Route path="videos" element={<Videos />} />
             <Route path="blogs" element={<Blogs />} />
+            <Route path="subscribers" element={<Subscriber />} />
             {/*<Route path="approvals" element={<Approvals />} />
             <Route path="pointsmanager" element={<PointsManager />} />
             <Route

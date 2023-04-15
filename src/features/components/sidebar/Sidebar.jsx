@@ -11,6 +11,7 @@ import {
   FormOutlined,
   ContainerOutlined,
   VideoCameraOutlined,
+  MailOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../../assets/images/logo_main.png";
@@ -77,7 +78,7 @@ const Sidebar = ({ setTitle }) => {
           Colleges
         </Menu.Item> */}
         <Menu.Item
-          key="4"
+          key="2"
           icon={<ContainerOutlined style={{ fontSize: "18px" }} />}
           style={{ fontSize: "18px", display: "flex", color: "#0a2c3c" }}
           onClick={() => {
@@ -88,12 +89,23 @@ const Sidebar = ({ setTitle }) => {
           Blogs
         </Menu.Item>
         <Menu.Item
-          key="5"
+          key="3"
           icon={<VideoCameraOutlined style={{ fontSize: "18px" }} />}
           style={{ fontSize: "18px", display: "flex", color: "#0a2c3c" }}
           onClick={() => {
             navigate("/admin/videos");
             setTitle("Videos");
+          }}
+        >
+          Videos
+        </Menu.Item>
+        <Menu.Item
+          key="4"
+          icon={<MailOutlined style={{ fontSize: "18px" }} />}
+          style={{ fontSize: "18px", display: "flex", color: "#0a2c3c" }}
+          onClick={() => {
+            navigate("/admin/subscribers");
+            setTitle("Subscribers");
           }}
         >
           Videos
