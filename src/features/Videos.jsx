@@ -8,6 +8,7 @@ import { EyeOutlined, CloseOutlined } from "@ant-design/icons";
 import { innerTableActionBtnDesign } from "./components/styles/innerTableActions";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import ReactPlayer from "react-player";
 
 const Videos = () => {
   const [show, setShow] = useState(false);
@@ -121,7 +122,15 @@ const Videos = () => {
     {
       key: "video",
       title: "Video",
-      render: (data) => data.video,
+      render: (data) =>
+        data?.playbackID ? (
+          <ReactPlayer
+            url={`https://stream.mux.com/${data?.playbackID}.m3u8`}
+            controls
+            width="100%"
+            style={{}}
+          />
+        ) : null,
     },
     // {
     //   key: "actions",
@@ -239,7 +248,7 @@ const Videos = () => {
               ></div>
             </div>
           )}
-          {progress === 100 && (
+          {progress == 100 && (
             <h1 className="my-2 text-center">Video Processing</h1>
           )}
         </form>
