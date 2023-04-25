@@ -11,6 +11,7 @@ import * as Yup from "yup";
 
 const Videos = () => {
   const [show, setShow] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   // Declaring the States Required for the Working of the Component
   const [actions, setActions] = useReducer(
@@ -20,8 +21,8 @@ const Videos = () => {
       loading: false,
       pagination: 15,
       trash: false,
-      loadingAllUpdates: false,
-      downloadAllUpdates: false,
+      loadingAllVideo: false,
+      downloadAllVideo: false,
     }
   );
 
@@ -30,59 +31,68 @@ const Videos = () => {
     loading,
     pagination,
     trash,
-    loadingAllUpdates,
-    downloadAllUpdates,
+    loadingAllVideo,
+    downloadAllVideo,
   } = actions;
 
   const [value, setValue] = useReducer(
     (state, diff) => ({ ...state, ...diff }),
-    { updates: [], allUpdates: [] }
+    { video: [], allVideo: [] }
   );
 
-  const { updates, allUpdates, drawerValue } = value;
+  const { video, allVideo, drawerValue } = value;
 
   // Functions Used for Different Data
   const requestsCaller = () => {
     setActions({ loading: true });
     axios
-      .get("/updates/get-all")
+      .get("/video/get-all")
       .then((res) => {
         setValue({
-          updates: res?.data?.data?.updates,
+          video: res?.data?.data?.blogs,
         });
       })
       .catch((err) => console.log(err))
       .finally(setActions({ loading: false }));
   };
 
-  const getAllUpdates = () => {
+  const getAllVideo = () => {
     setActions({ loadingAllProducts: true });
     axios
-      .get("/updates/get-all", {})
+      .get("/video/get-all", {})
       .then((res) => {
         toast.success("Business Users Ready for Download");
-        setActions({ downloadAllUpdates: true });
+        setActions({ downloadAllVideo: true });
         setValue({
-          allUpdates: res?.data?.data?.updates,
+          allVideo: res?.data?.data?.blogs,
         });
       })
       .catch((err) => console.log(err))
       .finally(setActions({ loadingAllBusiness: true }));
   };
 
-  const handleNewUpdates = (value) => {
-    console.log(value);
+  const handleNewVideo = (value) => {
+    console.log(value.video, "value");
     const formData = new FormData();
-    formData.append("imageMain", value.imageMain);
-    formData.append("document", value.document);
-    delete value.iamgeMain;
-    delete value.document;
+    formData.append("video", value.video);
+    delete value.video;
     formData.append("data", JSON.stringify(value));
-    console.log(formData, "hiD");
+    console.log(formData, "hello");
     axios
-      .post("/updates/create", formData)
+      .post("/video/create", formData, {
+        onUploadProgress: (progressEvent) => {
+          // Calculate the upload progress percentage
+          const uploadProgress = Math.round(
+            (progressEvent.loaded / progressEvent.total) * 100
+          );
+          setProgress(uploadProgress);
+
+          // Update the UI to display the progress
+          console.log(`Upload Progress: ${uploadProgress}%`);
+        },
+      })
       .then((res) => {
-        toast.success("New Update Added Successfully.");
+        toast.success("New Video Added Successfully.");
         requestsCaller();
         setShow(false);
       })
@@ -109,25 +119,9 @@ const Videos = () => {
       render: (data) => data.description,
     },
     {
-      key: "imageMain",
-      title: "ImageMain",
-      render: (data) => (
-        <img src={data?.imageMain} className="h-36 max-w-56 mx-auto" />
-      ),
-    },
-    {
-      key: "document",
-      title: "Document",
-      render: (data) =>
-        data?.document ? (
-          <a
-            href={data?.document}
-            target="_blank"
-            className="py-2 px-6 text-white rounded-md bg-secondary"
-          >
-            View
-          </a>
-        ) : null,
+      key: "video",
+      title: "Video",
+      render: (data) => data.video,
     },
     // {
     //   key: "actions",
@@ -162,24 +156,24 @@ const Videos = () => {
     }),
     onSubmit: (values) => {
       console.log("Hello world");
-      handleNewUpdates(values);
+      handleNewVideo(values);
     },
   });
 
   return (
     <div className="">
-      {/* <ActionButtons
-        pageTitle={"Updates"}
+      <ActionButtons
+        pageTitle={"Video"}
         showTrashButton={false}
         showTrashFunction={""}
         showReFreshButton={true}
         refreshFunction={requestsCaller}
         showExportDataButton={true}
-        exportDataFunction={getAllUpdates}
-        totalItems={allUpdates}
-        csvName={"updates"}
-        loadingItems={loadingAllUpdates}
-        downloadItems={downloadAllUpdates}
+        exportDataFunction={getAllVideo}
+        totalItems={allVideo}
+        csvName={"video"}
+        loadingItems={loadingAllVideo}
+        downloadItems={downloadAllVideo}
         showAddNewButton={true}
         addNewFunction={showAddNew}
       />
@@ -189,7 +183,7 @@ const Videos = () => {
           className="my-6 max-w-screen-lg mx-auto"
         >
           <div className="flex items-center justify-between gap-4">
-            <h1 className="text-xl text-purple-1 m-0">Add New Update Type</h1>
+            <h1 className="text-xl text-purple-1 m-0">Add New Video Type</h1>
             <button className="ml-10 mt-0 pt-0" onClick={() => setShow(false)}>
               <CloseOutlined style={{ fontSize: "20px" }} />
             </button>
@@ -198,7 +192,7 @@ const Videos = () => {
             <div className="">
               <input
                 type="text"
-                placeholder="Title of Update"
+                placeholder="Title of Video"
                 className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg w-full"
                 {...formik.getFieldProps("title")}
               />
@@ -208,7 +202,7 @@ const Videos = () => {
             </div>
             <div className="">
               <textarea
-                placeholder="Description of update"
+                placeholder="Description of video"
                 className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg w-full h-40"
                 {...formik.getFieldProps("description")}
               />
@@ -218,24 +212,13 @@ const Videos = () => {
             </div>
             <div className="flex items-center justify-evenly gap-4">
               <div className="">
-                <h1>Main Image</h1>
+                <h1>Video</h1>
                 <input
                   type="file"
-                  placeholder="Name of Packaging Type "
+                  placeholder="Name of Packaging Type"
                   className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg"
                   onChange={(e) =>
-                    formik.setFieldValue("imageMain", e.currentTarget.files[0])
-                  }
-                />
-              </div>
-              <div className="">
-                <h1>Document</h1>
-                <input
-                  type="file"
-                  placeholder="Name of Packaging Type "
-                  className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg"
-                  onChange={(e) =>
-                    formik.setFieldValue("document", e.currentTarget.files[0])
+                    formik.setFieldValue("video", e.currentTarget.files[0])
                   }
                 />
               </div>
@@ -247,13 +230,22 @@ const Videos = () => {
               Submit
             </button>
           </div>
+
+          {progress !== 0 && progress !== 100 && (
+            <div className="w-full lg:w-1/2 rounded-full bg-gray-500 my-3 mx-auto">
+              <div
+                className="h-2 bg-primary rounded-full"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          )}
+          {progress === 100 && (
+            <h1 className="my-2 text-center">Video Processing</h1>
+          )}
         </form>
       ) : null}
       <div className="border-2 mt-5">
-        <DataTable usersData={updates} columns={columns} loading={loading} />
-      </div> */}
-      <div className="flex items-center justify-center">
-        <h1 className="text-3xl text-center">Coming Soon</h1>
+        <DataTable usersData={video} columns={columns} loading={loading} />
       </div>
     </div>
   );
