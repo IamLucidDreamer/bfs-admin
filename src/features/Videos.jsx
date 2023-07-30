@@ -4,7 +4,7 @@ import ActionButtons from "./components/actionsButtons/Index";
 import { DataTable } from "./components/table/Index";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { EyeOutlined, CloseOutlined } from "@ant-design/icons";
+import { EyeOutlined, CloseOutlined, DeleteOutlined } from "@ant-design/icons";
 import { innerTableActionBtnDesign } from "./components/styles/innerTableActions";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -98,10 +98,20 @@ const Videos = () => {
         setShow(false);
       })
       .catch((err) => console.log(err))
-      .finally(setActions({ loadingAllBusiness: true }));
+      .finally(setActions({}));
   };
 
-  const deletePackaging = () => {};
+  const deleteVideo = (videoId) => {
+    setActions({ loading: true });
+    axios
+      .delete(`/video/delete/${videoId}`)
+      .then((res) => {
+        toast.success("Video Removed Successfully.");
+        requestsCaller();
+      })
+      .catch((err) => console.log(err))
+      .finally(setActions({ loading: false }));
+  };
 
   const showAddNew = () => setShow(true);
 
@@ -132,23 +142,28 @@ const Videos = () => {
           />
         ) : null,
     },
-    // {
-    //   key: "actions",
-    //   title: "Actions",
-    //   render: (record) => <ColumnActions record={record} />,
-    // },
+    {
+      key: "actions",
+      title: "Actions",
+      render: (record) => <ColumnActions record={record} />,
+    },
   ];
 
   const ColumnActions = (props) => {
     return (
       <div className="flex justify-around">
-        <EyeOutlined
+        {/* <EyeOutlined
           title="View"
           style={innerTableActionBtnDesign}
           onClick={() => {
             setActions({ drawer: true });
             setValue({ drawerValue: props?.record });
           }}
+        /> */}
+        <DeleteOutlined
+          title="Delete Video"
+          style={innerTableActionBtnDesign}
+          onClick={() => deleteVideo(props?.record?._id)}
         />
       </div>
     );

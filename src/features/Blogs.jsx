@@ -4,7 +4,7 @@ import ActionButtons from "./components/actionsButtons/Index";
 import { DataTable } from "./components/table/Index";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { EyeOutlined, CloseOutlined } from "@ant-design/icons";
+import { EyeOutlined, CloseOutlined, DeleteOutlined } from "@ant-design/icons";
 import { innerTableActionBtnDesign } from "./components/styles/innerTableActions";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -93,7 +93,17 @@ const Blogs = () => {
       .finally(setActions({ addNewloading: false }));
   };
 
-  const deletePackaging = () => {};
+  const deleteBlog = (blogId) => {
+    setActions({ loading: true });
+    axios
+      .delete(`/blog/delete/${blogId}`)
+      .then((res) => {
+        toast.success("Blog Removed Successfully.");
+        requestsCaller();
+      })
+      .catch((err) => console.log(err))
+      .finally(setActions({ loading: false }));
+  };
 
   const showAddNew = () => setShow(true);
 
@@ -133,23 +143,28 @@ const Blogs = () => {
         <img src={data?.imageSecondary} className="h-36 max-w-56 mx-auto" />
       ),
     },
-    // {
-    //   key: "actions",
-    //   title: "Actions",
-    //   render: (record) => <ColumnActions record={record} />,
-    // },
+    {
+      key: "actions",
+      title: "Actions",
+      render: (record) => <ColumnActions record={record} />,
+    },
   ];
 
   const ColumnActions = (props) => {
     return (
       <div className="flex justify-around">
-        <EyeOutlined
+        {/* <EyeOutlined
           title="View"
           style={innerTableActionBtnDesign}
           onClick={() => {
             setActions({ drawer: true });
             setValue({ drawerValue: props?.record });
           }}
+        /> */}
+        <DeleteOutlined
+          title="Delete Blog"
+          style={innerTableActionBtnDesign}
+          onClick={() => deleteBlog(props?.record?._id)}
         />
       </div>
     );
@@ -264,7 +279,7 @@ const Blogs = () => {
               </div>
             </div>
             <Button
-              onClick={()=>formik.handleSubmit()}
+              onClick={() => formik.handleSubmit()}
               className="w-full"
               type="primary"
               style={{ fontWeight: "bold" }}
