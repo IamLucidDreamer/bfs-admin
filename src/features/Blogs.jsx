@@ -4,7 +4,12 @@ import ActionButtons from "./components/actionsButtons/Index";
 import { DataTable } from "./components/table/Index";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { EyeOutlined, CloseOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  EyeOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 import { innerTableActionBtnDesign } from "./components/styles/innerTableActions";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -12,6 +17,7 @@ import { Button } from "antd";
 
 const Blogs = () => {
   const [show, setShow] = useState(false);
+  const [editData, setEditData] = useState({});
 
   // Declaring the States Required for the Working of the Component
   const [actions, setActions] = useReducer(
@@ -85,12 +91,35 @@ const Blogs = () => {
     axios
       .post("/blog/create", formData)
       .then((res) => {
-        toast.success("New Update Added Successfully.");
+        toast.success("New Blog Added Successfully.");
         requestsCaller();
         setShow(false);
       })
       .catch((err) => console.log(err))
       .finally(setActions({ addNewloading: false }));
+  };
+
+  const handleEditBlog = (value) => {
+    setActions({ addNewloading: true });
+    const formData = new FormData();
+    formData.append("imageMain", value.imageMain);
+    formData.append("imageSecondary", value.imageSecondary);
+    delete value.iamgeMain;
+    delete value.imageSecondary;
+    formData.append("data", JSON.stringify(value));
+    console.log(formData, "hiD");
+    axios
+      .put(`/blog/update/${editData?._id}`, formData)
+      .then((res) => {
+        toast.success("Blog Updated Added Successfully.");
+        requestsCaller();
+        setShow(false);
+      })
+      .catch((err) => console.log(err))
+      .finally(() => {
+        setActions({ addNewloading: false });
+        setEditData({});
+      });
   };
 
   const deleteBlog = (blogId) => {
@@ -103,6 +132,12 @@ const Blogs = () => {
       })
       .catch((err) => console.log(err))
       .finally(setActions({ loading: false }));
+  };
+
+  const editBlog = (blogData) => {
+    setEditData(blogData);
+    window.scroll(0, 0);
+    setShow(true);
   };
 
   const showAddNew = () => setShow(true);
@@ -152,7 +187,7 @@ const Blogs = () => {
 
   const ColumnActions = (props) => {
     return (
-      <div className="flex justify-around">
+      <div className="flex justify-around gap-4">
         {/* <EyeOutlined
           title="View"
           style={innerTableActionBtnDesign}
@@ -161,6 +196,11 @@ const Blogs = () => {
             setValue({ drawerValue: props?.record });
           }}
         /> */}
+        <EditOutlined
+          title="Delete Blog"
+          style={innerTableActionBtnDesign}
+          onClick={() => editBlog(props?.record)}
+        />
         <DeleteOutlined
           title="Delete Blog"
           style={innerTableActionBtnDesign}
@@ -170,21 +210,113 @@ const Blogs = () => {
     );
   };
 
-  const formik = useFormik({
-    initialValues: {
-      tag: "",
-      title: "",
-      description: "",
-    },
-    validationSchema: Yup.object({
-      title: Yup.string().required("Required"),
-      description: Yup.string().required("Required"),
-    }),
-    onSubmit: (values) => {
-      console.log("Hello world");
-      handleNewBlogs(values);
-    },
-  });
+  const EntryForm = () => {
+    const formik = useFormik({
+      initialValues: {
+        tag: editData?.tag || "",
+        title: editData?.title || "",
+        description: editData?.description || "",
+      },
+      validationSchema: Yup.object({
+        title: Yup.string().required("Required"),
+        description: Yup.string().required("Required"),
+      }),
+      onSubmit: (values) => {
+        console.log("Hello world");
+        if (editData?._id) {
+          handleEditBlog(values);
+        } else {
+          handleNewBlogs(values);
+        }
+      },
+    });
+
+    return (
+      <form
+        onSubmit={formik.handleSubmit}
+        className="my-6 max-w-screen-lg mx-auto"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-xl text-purple-1 m-0">Add New Blog</h1>
+          <button className="ml-10 mt-0 pt-0" onClick={() => setShow(false)}>
+            <CloseOutlined style={{ fontSize: "20px" }} />
+          </button>
+        </div>
+        <div className="flex flex-col gap-4 mt-4">
+          <div className="">
+            <select
+              className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg w-full"
+              {...formik.getFieldProps("tag")}
+            >
+              <option disabled value="">
+                Choose Tag
+              </option>
+              {["My-Space", "Automotive", "Pharma", "Lifestyle"].map((val) => {
+                return <option value={val}>{val}</option>;
+              })}
+            </select>
+          </div>
+          <div className="">
+            <input
+              type="text"
+              placeholder="Title of Blog"
+              className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg w-full"
+              {...formik.getFieldProps("title")}
+            />
+            {formik.touched.title && formik.errors.title ? (
+              <div>{formik.errors.title}</div>
+            ) : null}
+          </div>
+          <div className="">
+            <textarea
+              placeholder="Description of Blog"
+              className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg w-full h-40"
+              {...formik.getFieldProps("description")}
+            />
+            {formik.touched.description && formik.errors.description ? (
+              <div>{formik.errors.description}</div>
+            ) : null}
+          </div>
+          <div className="flex items-center justify-evenly gap-4">
+            <div className="">
+              <h1>Main Image</h1>
+              <input
+                type="file"
+                placeholder="Name of Packaging Type "
+                className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg"
+                onChange={(e) =>
+                  formik.setFieldValue("imageMain", e.currentTarget.files[0])
+                }
+              />
+            </div>
+            <div className="">
+              <h1>Secondary Image</h1>
+              <input
+                type="file"
+                placeholder="Name of Packaging Type "
+                className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg"
+                onChange={(e) =>
+                  formik.setFieldValue(
+                    "imageSecondary",
+                    e.currentTarget.files[0]
+                  )
+                }
+              />
+            </div>
+          </div>
+          <Button
+            onClick={() => formik.handleSubmit()}
+            className="w-full"
+            type="primary"
+            style={{ fontWeight: "bold" }}
+            loading={addNewloading}
+          >
+            Submit
+          </Button>
+        </div>
+      </form>
+    );
+  };
 
   return (
     <div className="">
@@ -203,93 +335,7 @@ const Blogs = () => {
         showAddNewButton={true}
         addNewFunction={showAddNew}
       />
-      {show ? (
-        <form
-          onSubmit={formik.handleSubmit}
-          className="my-6 max-w-screen-lg mx-auto"
-        >
-          <div className="flex items-center justify-between gap-4">
-            <h1 className="text-xl text-purple-1 m-0">Add New Blog</h1>
-            <button className="ml-10 mt-0 pt-0" onClick={() => setShow(false)}>
-              <CloseOutlined style={{ fontSize: "20px" }} />
-            </button>
-          </div>
-          <div className="flex flex-col gap-4 mt-4">
-            <div className="">
-              <select
-                className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg w-full"
-                {...formik.getFieldProps("tag")}
-              >
-                <option disabled value="">
-                  Choose Tag
-                </option>
-                {["My-Space", "Automotive", "Pharma", "Lifestyle"].map(
-                  (val) => {
-                    return <option value={val}>{val}</option>;
-                  }
-                )}
-              </select>
-            </div>
-            <div className="">
-              <input
-                type="text"
-                placeholder="Title of Blog"
-                className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg w-full"
-                {...formik.getFieldProps("title")}
-              />
-              {formik.touched.title && formik.errors.title ? (
-                <div>{formik.errors.title}</div>
-              ) : null}
-            </div>
-            <div className="">
-              <textarea
-                placeholder="Description of Blog"
-                className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg w-full h-40"
-                {...formik.getFieldProps("description")}
-              />
-              {formik.touched.description && formik.errors.description ? (
-                <div>{formik.errors.description}</div>
-              ) : null}
-            </div>
-            <div className="flex items-center justify-evenly gap-4">
-              <div className="">
-                <h1>Main Image</h1>
-                <input
-                  type="file"
-                  placeholder="Name of Packaging Type "
-                  className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg"
-                  onChange={(e) =>
-                    formik.setFieldValue("imageMain", e.currentTarget.files[0])
-                  }
-                />
-              </div>
-              <div className="">
-                <h1>Secondary Image</h1>
-                <input
-                  type="file"
-                  placeholder="Name of Packaging Type "
-                  className="border-2 border-purple-1 px-2 py-3 bg-purple-1 bg-opacity-5 rounded-lg"
-                  onChange={(e) =>
-                    formik.setFieldValue(
-                      "imageSecondary",
-                      e.currentTarget.files[0]
-                    )
-                  }
-                />
-              </div>
-            </div>
-            <Button
-              onClick={() => formik.handleSubmit()}
-              className="w-full"
-              type="primary"
-              style={{ fontWeight: "bold" }}
-              loading={addNewloading}
-            >
-              Submit
-            </Button>
-          </div>
-        </form>
-      ) : null}
+      {show ? <EntryForm /> : null}
       <div className="border-2 mt-5">
         <DataTable usersData={blogs} columns={columns} loading={loading} />
       </div>
